@@ -2,6 +2,8 @@ clc;
 close all;
 clear all;
 
+%% If you have Fifty-1 files, Follow below.
+% in the for loop, you can see the function 'num2str', which is to convert numbers to character array.
 cnt = 0;
 
 for F1 = 1:49
@@ -31,33 +33,39 @@ end
 figure; imagesc(input(:,:,1));colormap gray; hold on;
 plot(target(1:2,1), target(3:4,1), '-yo');
 
+%% Make and divide two group like train group and test group.
+% input files are all dataset and these have three dimension, and the size is 512 by 512.
+% target files mean the labeled images, which are related to right answer.
+% And these have two dimesion, and the size is 4 by 3.
 
 h5create('chest_test.h5','/input', [512,512,3]);
 h5write('chest_test.h5', '/input', input(:,:,13:15));
-% 정답레이블
 h5create('chest_test.h5','/target', [4,3]);
-h5write('chest_test.h5', '/target', target(:,13:15) / 512);
+h5write('chest_test.h5', '/target', target(:,13:15) / 512); % normalize this target file by dividing to 512.
 
 in_train = input(:,:,1:12);
 tar_train = target(:,1:12);
 
+%% Data Augmetation using the function of 'fliplr' and 'flipud'
+% the function 'fliplr' is to flip array left to right.
+% the function 'flipud' is to flip array up to down.
+
 in_train2 = fliplr(in_train);
 tar_train2 = [tar_train(2:-1:1,:); tar_train(3:4,:)];
-
 in_train3 = flipud(in_train);
 tar_train3 = [tar_train(1:2,:); 512 - tar_train(3:4,:)];
 
 in_train_set = cat(3, in_train, in_train2, in_train3);
 tar_train_set = cat(2, tar_train, tar_train2, tar_train3);
 
-% rand_idx=randperm(36);
-% 
-% in_shuf = in_train_set(:,:,rand_idx);
-% tar_shuf = tar_train_set(:,rand_idx);
-
 h5create('chest_train.h5','/input', size(in_train_set));
 h5write('chest_train.h5', '/input', in_train_set);
 h5create('chest_train.h5','/target', size(tar_train_set));
 h5write('chest_train.h5', '/target', tar_train_set / 512);
 
-
+%% If you need to mix your dataset randomly, Follow below.
+%% Mixing tuple for learning, except for this project
+% rand_idx=randperm(36);
+% 
+% in_shuf = in_train_set(:,:,rand_idx);
+% tar_shuf = tar_train_set(:,rand_idx);
